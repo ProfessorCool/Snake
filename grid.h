@@ -37,8 +37,8 @@ struct Grid
 		return dimensions;
 	}
 	void createModelTransformationVector();
-	void drawSnakes(Shader shader, glm::vec3 color = glm::vec3(0.8, 0.3, 0.3));
-	void drawFood(Shader shader, glm::vec3 color = glm::vec3(0.9, 0.9, 0.0));
+	void drawSnakes(Shader shader, glm::vec3 color = glm::vec3(0.9, 0.9, 0.0));
+	void drawFood(Shader shader, glm::vec3 color = glm::vec3(0.8, 0.3, 0.3));
 private:
 	std::array<unsigned, 2> dimensions = { 50, 50 };
 	std::array<unsigned, 2> foodPosition;

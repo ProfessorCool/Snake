@@ -13,6 +13,8 @@
 #include <iostream>
 #include <vector>
 
+#include "text.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window, Snake &snake);
 
@@ -133,7 +135,45 @@ int main()
 	
 	srand(time(NULL));
 	
-	
+
+	//Now initialize the font for the game
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		return -1;
+	}
+	FT_Face face;
+	if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
+	{
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+		return -1;
+	}
+	FT_Set_Pixel_Sizes(face, 0, 48);
+	std::map<char, Character> Characters;
+	generateCharacterMap(Characters, face);
+
+	//Now unload FreeType resources
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+	//Create the text shader
+	Shader textShader("shaders/text.vs", "shaders/text.frs");
+
+	//enable blending for text
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	unsigned int VAO_text, VBO_text;
+	glGenVertexArrays(1, &VAO_text);
+	glGenBuffers(1, &VBO_text);
+	glBindVertexArray(VAO_text);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_text);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -191,7 +231,10 @@ int main()
 			grid.drawFood(ourShader);
 			drawBackground(ourShader);
 
-
+			//render text
+			createTransformationVectors(textShader, window);
+			glBindVertexArray(VAO_text);
+			RenderText(textShader, "Sample Text", 25.0f, 25.0f, 1.0f, glm::vec3(0.2, 0.5f, 0.5f), VAO_text, VBO_text, Characters);
 
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
